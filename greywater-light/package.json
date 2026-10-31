@@ -1,0 +1,9 @@
+{
+  "name": "greywater-light-hunt",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Online treasure hunt: static front-end + one serverless API + Supabase",
+  "scripts": { "dev": "node dev.js" },
+  "dependencies": { "@supabase/supabase-js": "^2.45.0" },
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Greywater Light</title>
+<meta name="description" content="An online treasure hunt. Nine linked puzzles, one sealed chest.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M11 28 13 10h6l2 18z' fill='%23c4352b'/%3E%3Cpath d='M12 18h8l.6 4h-9.2z' fill='%23fff'/%3E%3Ccircle cx='16' cy='7' r='3' fill='%23a9822c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fog:#e3e8e8; --paper:#f4f6f5; --ink:#11242f; --ink-2:#4a5d68; --line:#c3ccce;
+  --signal:#c4352b; --signal-d:#9d261e; --brass:#a9822c; --sea:#2d6b78; --ok:#1f7a55;
+  --lab:#0c1418; --lab-line:#26363d;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--fog);color:var(--ink);font:400 18px/1.6 var(--serif);min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--signal-d)}
+:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;gap:20px;padding:10px 24px;background:var(--ink);color:#e9eeee;position:sticky;top:0;z-index:5}
+.brand{font:800 26px/1 var(--display);letter-spacing:.02em;color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px}
+.brand svg{height:30px;width:auto}
+.nav{display:flex;gap:4px;margin-left:12px}
+.nav a{color:#c8d3d6;text-decoration:none;padding:6px 12px;font:700 17px/1 var(--display);letter-spacing:.04em;border-bottom:3px solid transparent}
+.nav a:hover{color:#fff}
+.nav a[aria-current=page]{color:#fff;border-bottom-color:var(--signal)}
+.grow{flex:1}
+.chip{font:500 14px/1 var(--mono);color:#fff;background:#21404c;padding:8px 10px;border-radius:2px;white-space:nowrap}
+.chip small{color:#9fb4ba;font-size:12px}
+.linkbtn{background:none;border:0;color:#c8d3d6;cursor:pointer;font:500 14px var(--mono);padding:6px;text-decoration:underline}
+.banner{background:#f3e7c4;border-left:6px solid var(--brass);padding:10px 24px;font-size:17px}
+
+main{max-width:1080px;margin:0 auto;padding:36px 24px 80px}
+h1,h2,h3{font-family:var(--display);font-weight:800;line-height:1;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(44px,8vw,88px)}
+h2{font-size:clamp(34px,5vw,52px)}
+h3{font-size:24px}
+.muted{color:var(--ink-2)}
+.mono{font-family:var(--mono)}
+
+/* ---------- buttons & fields ---------- */
+.btn{display:inline-block;background:var(--signal);color:#fff;border:0;border-radius:2px;padding:12px 22px;font:800 20px/1 var(--display);letter-spacing:.05em;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--signal-d)}
+.btn[disabled]{opacity:.5;cursor:wait}
+.btn.quiet{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.btn.quiet:hover{background:var(--ink);color:#fff}
+.btn.small{padding:8px 12px;font-size:16px}
+label{display:block;font:500 14px var(--mono);margin:16px 0 6px;color:var(--ink-2)}
+input[type=text],input[type=password]{width:100%;background:#fff;border:2px solid var(--ink);border-radius:2px;padding:11px 12px;font:500 18px var(--mono)}
+.err{color:var(--signal-d);font:500 15px/1.4 var(--mono);min-height:1.4em;margin:12px 0 0}
+.ok{color:var(--ok)}
+
+/* ---------- auth ---------- */
+.auth{display:grid;grid-template-columns:1.15fr 1fr;gap:56px;align-items:start;padding-top:20px}
+.auth .lede{font-size:22px;max-width:30ch;margin:22px 0 28px;color:var(--ink-2)}
+.auth form{background:var(--paper);border:2px solid var(--ink);padding:26px 28px 30px}
+.tabs{display:flex;gap:22px;margin-bottom:6px}
+.tabs button{background:none;border:0;border-bottom:4px solid transparent;font:800 26px/1 var(--display);padding:0 0 6px;cursor:pointer;color:var(--ink-2)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--signal)}
+.auth form .btn{margin-top:22px;width:100%}
+.auth .foot{margin-top:18px;font:500 14px var(--mono)}
+.stripe{height:16px;width:170px;background:repeating-linear-gradient(90deg,var(--signal) 0 22px,#fff 22px 44px);border:2px solid var(--ink)}
+
+/* ---------- hunt ---------- */
+.hunt{display:grid;grid-template-columns:150px minmax(0,1fr);gap:44px;align-items:start}
+.tower{position:sticky;top:84px}
+.tower svg{width:150px;height:auto;display:block;overflow:visible}
+.tower .cur{animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.tower .beam{animation:beam 3.5s ease-in-out infinite;transform-origin:60px 40px}
+@keyframes beam{50%{opacity:.35}}
+.strip{display:none}
+.lvlhead{border-left:10px solid var(--signal);padding-left:18px;margin-bottom:22px}
+.lvlhead .n{font:500 15px var(--mono);color:var(--ink-2)}
+.story p{margin:0 0 14px;max-width:62ch}
+.story p:first-child::first-letter{font-weight:500}
+.cipher{background:var(--paper);border:2px solid var(--ink);padding:18px 20px;margin:22px 0;font:500 20px/1.8 var(--mono);white-space:pre-wrap;word-break:break-word;letter-spacing:.06em}
+.answer{display:flex;gap:10px;margin:26px 0 0;max-width:560px}
+.answer input{flex:1}
+.answer .btn{width:auto;white-space:nowrap}
+.hints{margin-top:30px;border-top:2px solid var(--line);padding-top:18px}
+.hints ol{margin:10px 0 0;padding-left:22px}
+.hints li{margin:0 0 8px;max-width:62ch}
+.hints .cost{font:500 14px var(--mono);color:var(--ink-2);margin-left:8px}
+details.journal{margin-top:34px;border-top:2px solid var(--line);padding-top:14px}
+details.journal summary{cursor:pointer;font:800 22px var(--display)}
+.journal table{border-collapse:collapse;margin-top:10px;font:500 15px var(--mono)}
+.journal td{padding:3px 22px 3px 0}
+.rules{margin:18px 0 28px;padding:0;list-style:none;max-width:60ch}
+.rules li{padding:8px 0 8px 22px;border-top:1px solid var(--line);position:relative}
+.rules li::before{content:"";position:absolute;left:0;top:19px;width:10px;height:10px;background:var(--signal)}
+.cleared{font:800 22px var(--display);color:var(--ok);margin:0 0 14px;letter-spacing:.03em}
+
+/* lamp (morse level) */
+.lampwrap{display:flex;align-items:center;gap:26px;margin:22px 0;flex-wrap:wrap}
+.lamp{width:150px;height:150px;border-radius:50%;background:#1b2a31;border:6px solid #0c1418;box-shadow:inset 0 0 20px #000;transition:none}
+.lamp.on{background:radial-gradient(circle at 50% 45%,#fffbe6 0,#ffd866 45%,#d99a1b 100%);box-shadow:0 0 60px 18px rgba(255,200,70,.65),inset 0 0 18px #fff7}
+.lampwrap .ctl{display:flex;gap:10px;flex-wrap:wrap}
+
+/* image lab */
+.lab{background:var(--lab);color:#cfe0e4;border:2px solid var(--ink);margin:22px 0;max-width:760px}
+.lab canvas{display:block;width:100%;height:auto;background:#000}
+.lab .ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px 22px;padding:16px 18px;border-top:1px solid var(--lab-line)}
+.lab label{margin:0 0 4px;color:#9fb4ba;display:flex;justify-content:space-between}
+.lab input[type=range]{width:100%;accent-color:var(--signal)}
+.lab select{width:100%;background:#16252b;color:#e5f0f2;border:1px solid var(--lab-line);padding:7px;font:500 15px var(--mono)}
+.lab .row{display:flex;align-items:center;gap:8px;font:500 14px var(--mono)}
+.lab .row input{accent-color:var(--signal);width:18px;height:18px}
+.lab .tools{display:flex;justify-content:flex-end;grid-column:1/-1}
+.lab .btn{background:#26363d}
+.lab .btn:hover{background:#34494f}
+
+/* ---------- leaderboard ---------- */
+.board h2{margin-bottom:8px}
+.board .sub{max-width:62ch;margin:0 0 26px;color:var(--ink-2)}
+table.lb{width:100%;border-collapse:collapse}
+.lb th{font:500 13px var(--mono);text-align:left;color:var(--ink-2);padding:0 12px 8px;border-bottom:3px solid var(--ink)}
+.lb td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.lb tr.me td{background:#fff}
+.lb .rk{font:800 30px/1 var(--display);width:60px}
+.lb tr:first-child .rk{color:var(--brass)}
+.lb .nm{font:500 18px var(--mono);word-break:break-all}
+.lb .t{font:500 16px var(--mono);white-space:nowrap}
+.seg{display:flex;gap:3px}
+.seg i{width:15px;height:20px;background:#d2dadb;display:block}
+.seg i.f:nth-child(odd){background:var(--signal)}
+.seg i.f:nth-child(even){background:#fff;box-shadow:inset 0 0 0 1.5px var(--signal)}
+.seg i.done{outline:0}
+.tag{font:800 15px var(--display);letter-spacing:.05em;color:#fff;background:var(--ok);padding:3px 8px;margin-left:10px}
+.empty{padding:44px 0;color:var(--ink-2)}
+
+/* ---------- admin ---------- */
+.stats{display:flex;gap:44px;flex-wrap:wrap;margin:22px 0 34px}
+.stats div{font:500 14px var(--mono);color:var(--ink-2)}
+.stats b{display:block;font:800 56px/1 var(--display);color:var(--ink)}
+.panel{border-top:3px solid var(--ink);padding-top:16px;margin-bottom:38px}
+.panel .bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.panel input[type=text]{max-width:440px}
+.state-open{color:var(--ok)} .state-closed{color:var(--signal-d)}
+.scroll{overflow-x:auto}
+.lb td.num{font:500 15px var(--mono);white-space:nowrap}
+.keytable td{padding:8px 12px;border-bottom:1px solid var(--line);font:500 16px var(--mono)}
+
+@media (max-width:780px){
+  body{font-size:17px}
+  .top{padding:10px 14px;gap:10px;flex-wrap:wrap;position:static}
+  .nav{margin-left:0;order:3;width:100%}
+  main{padding:26px 16px 70px}
+  .auth{grid-template-columns:1fr;gap:30px}
+  .hunt{grid-template-columns:1fr;gap:0}
+  .tower{display:none}
+  .strip{display:flex;gap:3px;margin-bottom:22px}
+  .strip i{flex:1;height:14px;background:#cdd6d7}
+  .strip i.f{background:var(--signal)} .strip i.c{background:var(--brass)}
+  .answer{flex-direction:column}
+  .lb .hide-s{display:none}
+  .cipher{font-size:17px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/" aria-label="The Greywater Light, home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 29 13 11h6l2 18z" fill="#c4352b"/><path d="M12 19h8l.6 4h-9.2z" fill="#fff"/><path d="M12.6 12.6h6.8l.2 2.2h-7.2z" fill="#fff"/><rect x="12" y="6" width="8" height="5" fill="#a9822c"/><path d="M11 6l5-4 5 4z" fill="#fff"/></svg>
+    <span>The Greywater Light</span>
+  </a>
+  <nav class="nav" id="nav" aria-label="Main"></nav>
+  <div class="grow"></div>
+  <div id="who" style="display:flex;gap:12px;align-items:center"></div>
+</header>
+<div id="banner"></div>
+<main id="app"></main>
+
+<script>
+(() => {
+'use strict';
+
+/* ------------------------------------------------------------ tiny helpers */
+const $ = (s, r = document) => r.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === false || v == null) continue;
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+const svg = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} }
+};
+const fmt = ms => {
+  if (ms == null) return '–';
+  const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60;
+  return (hh ? hh + ':' + String(mm).padStart(2, '0') : mm) + ':' + String(ss).padStart(2, '0');
+};
+const ago = iso => {
+  if (!iso) return '–';
+  const m = Math.floor((Date.now() - Date.parse(iso)) / 60000);
+  return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : Math.floor(m / 60) + ' h ago';
+};
+
+/* ------------------------------------------------------------ session + api */
+let token = store.get('gw.token'), role = store.get('gw.role'), ST = null, offset = 0;
+let cleanups = [];
+const cleanup = () => { cleanups.forEach(f => { try { f(); } catch {} }); cleanups = []; };
+
+async function api(a, body) {
+  let r;
+  try {
+    r = await fetch('/api/game', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+      body: JSON.stringify({ a, ...body })
+    });
+  } catch { throw new Error('Cannot reach the server. Check your connection.'); }
+  let data = {}; try { data = await r.json(); } catch {}
+  if (!r.ok) {
+    if (r.status === 401 && token && a !== 'login' && a !== 'admin_login') { signOut(true); }
+    throw new Error(data.error || 'Request failed (' + r.status + ')');
+  }
+  return data;
+}
+function setSession(t, r, st) {
+  token = t; role = r; store.set('gw.token', t); store.set('gw.role', r);
+  if (st) setState(st);
+}
+function setState(st) { ST = st; offset = st.server_now - Date.now(); renderBanner(); }
+function signOut(expired) {
+  token = null; role = null; ST = null; store.set('gw.token', null); store.set('gw.role', null);
+  location.hash = '#/'; route(expired ? 'Your session ended. Please sign in again.' : '');
+}
+
+/* ------------------------------------------------------------ chrome */
+function renderChrome() {
+  const here = location.hash || '#/';
+  const nav = $('#nav'); nav.replaceChildren();
+  const link = (href, text) => nav.append(h('a', { href, 'aria-current': here === href ? 'page' : false }, text));
+  if (role === 'admin') { link('#/admin', 'Control room'); link('#/board', 'Leaderboard'); }
+  else { if (role === 'player') link('#/', 'The hunt'); link('#/board', 'Leaderboard'); }
+  const who = $('#who'); who.replaceChildren();
+  if (role === 'player' && ST) who.append(h('span', { class: 'chip', id: 'timer', 'aria-live': 'off' }));
+  if (role === 'admin') who.append(h('span', { class: 'chip' }, 'organiser'));
+  if (token) who.append(h('button', { class: 'linkbtn', onclick: () => signOut() }, 'Sign out'));
+  tickTimer();
+}
+function renderBanner() {
+  const b = $('#banner'); b.replaceChildren();
+  if (ST && ST.announcement) b.append(h('div', { class: 'banner', role: 'status' }, ST.announcement));
+}
+function tickTimer() {
+  const t = $('#timer'); if (!t || !ST) return;
+  if (!ST.started_at) { t.textContent = 'not started'; return; }
+  if (ST.finished) { t.textContent = 'final ' + fmt(ST.time_ms); return; }
+  const ms = Date.now() + offset - Date.parse(ST.started_at) + ST.hints_used * ST.hint_penalty_min * 60000;
+  t.textContent = fmt(ms);
+  t.title = ST.hints_used ? ST.hints_used + ' hint(s) added ' + ST.hints_used * ST.hint_penalty_min + ' min' : 'Time since you started';
+}
+setInterval(tickTimer, 1000);
+
+/* ------------------------------------------------------------ routing */
+async function route(notice) {
+  cleanup();
+  const hash = location.hash || '#/';
+  const app = $('#app');
+  window.scrollTo(0, 0);
+  if (hash === '#/board') { renderChrome(); return viewBoard(app); }
+  if (role === 'admin') {
+    if (hash !== '#/admin') { location.replace('#/admin'); return; }
+    renderChrome(); return viewAdmin(app);
+  }
+  if (hash === '#/admin') { renderChrome(); return viewAuth(app, 'admin', notice); }
+  if (role !== 'player' || !token) { renderChrome(); return viewAuth(app, 'login', notice); }
+  try { if (!ST) setState((await api('me')).state); } catch (e) { renderChrome(); return viewAuth(app, 'login', e.message); }
+  renderChrome(); viewHunt(app);
+}
+window.addEventListener('hashchange', () => route());
+
+/* ------------------------------------------------------------ auth view */
+function viewAuth(app, mode, notice) {
+  document.title = 'The Greywater Light';
+  const isAdmin = mode === 'admin';
+  const err = h('p', { class: 'err', role: 'alert' }, notice || '');
+  const form = h('form', { novalidate: true, autocomplete: 'on' });
+  const draw = () => {
+    form.replaceChildren(...[
+      isAdmin ? h('h3', {}, 'Organiser sign in') : h('div', { class: 'tabs', role: 'tablist' },
+        h('button', { type: 'button', role: 'tab', 'aria-selected': mode === 'login', onclick: () => { mode = 'login'; draw(); } }, 'Sign in'),
+        h('button', { type: 'button', role: 'tab', 'aria-selected': mode === 'register', onclick: () => { mode = 'register'; draw(); } }, 'Create account')),
+      h('label', { for: 'u' }, 'Username'),
+      h('input', { id: 'u', type: 'text', name: 'username', autocomplete: 'username', autocapitalize: 'off', spellcheck: 'false', required: true }),
+      h('label', { for: 'p' }, 'Password'),
+      h('input', { id: 'p', type: 'password', name: 'password', autocomplete: mode === 'register' ? 'new-password' : 'current-password', required: true }),
+      mode === 'register' ? h('p', { class: 'muted mono', style: 'font-size:13px;margin:8px 0 0' }, '3–20 letters, numbers or underscores. Password: 6+ characters.') : null,
+      err,
+      h('button', { class: 'btn', type: 'submit' }, isAdmin ? 'Enter control room' : mode === 'register' ? 'Create account' : 'Sign in'),
+      h('p', { class: 'foot' },
+        isAdmin ? h('a', { href: '#/' }, 'Back to the hunt') : h('a', { href: '#/admin' }, 'Organiser sign in'))
+    ].filter(Boolean));
+  };
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const btn = $('button[type=submit]', form); btn.disabled = true; err.textContent = '';
+    try {
+      const body = { username: $('#u').value, password: $('#p').value };
+      const res = await api(isAdmin ? 'admin_login' : mode, body);
+      setSession(res.token, isAdmin ? 'admin' : 'player', res.state);
+      if (isAdmin) location.hash = '#/admin'; else if (location.hash && location.hash !== '#/') location.hash = '#/';
+      route();
+    } catch (e) { err.textContent = e.message; btn.disabled = false; }
+  });
+  draw();
+  app.replaceChildren(h('div', { class: 'auth' },
+    h('div', {},
+      h('div', { class: 'stripe', 'aria-hidden': 'true' }),
+      h('h1', { style: 'margin-top:22px' }, 'The Greywater Light'),
+      h('p', { class: 'lede' }, 'Nine linked puzzles lead to one sealed chest. Fastest keeper wins.'),
+      h('a', { class: 'btn quiet small', href: '#/board' }, 'View leaderboard')),
+    form));
+}
+
+/* ------------------------------------------------------------ tower */
+function tower(st) {
+  const total = st.total, bandH = 252 / total, solved = st.level;
+  const s = svg('svg', { viewBox: '0 0 120 360', role: 'img', 'aria-label': 'Progress: ' + solved + ' of ' + total + ' levels solved' });
+  const wAt = y => 50 + (y - 48) / 252 * 40; // narrow at top, wide at bottom
+  if (st.finished) {
+    const g = svg('g', { class: 'beam' });
+    g.append(svg('polygon', { points: '60,40 -22,24 -22,56', fill: '#ffd866', opacity: '.6' }),
+             svg('polygon', { points: '60,40 142,24 142,56', fill: '#ffd866', opacity: '.6' }));
+    s.append(g);
+  }
+  for (let i = 0; i < total; i++) {
+    const yb = 300 - i * bandH, yt = yb - bandH, wb = wAt(yb) / 2, wt = wAt(yt) / 2;
+    const done = i < solved, cur = i === solved && !st.finished;
+    const p = svg('polygon', {
+      points: `${60 - wb},${yb} ${60 + wb},${yb} ${60 + wt},${yt} ${60 - wt},${yt}`,
+      fill: done ? (i % 2 === 0 ? '#c4352b' : '#fbfcfb') : '#d3dbdc',
+      stroke: cur ? '#a9822c' : '#11242f', 'stroke-width': cur ? 3 : 1.5, class: cur ? 'cur' : ''
+    });
+    s.append(p);
+    const t = svg('text', { x: 60, y: yb - bandH / 2 + 5, 'text-anchor': 'middle', 'font-size': 14, 'font-family': 'Big Shoulders Display', 'font-weight': 800, fill: done && i % 2 === 0 ? '#fff' : '#11242f' });
+    t.textContent = i + 1; s.append(t);
+  }
+  s.append(svg('rect', { x: 28, y: 44, width: 64, height: 6, fill: '#11242f' }));
+  s.append(svg('rect', { x: 44, y: 24, width: 32, height: 20, fill: st.finished ? '#ffd866' : '#8fa4a8', stroke: '#11242f', 'stroke-width': 2 }));
+  s.append(svg('polygon', { points: '40,24 60,8 80,24', fill: '#11242f' }));
+  s.append(svg('rect', { x: 20, y: 300, width: 80, height: 10, fill: '#11242f' }));
+  return s;
+}
+const strip = st => h('div', { class: 'strip', 'aria-hidden': 'true' },
+  Array.from({ length: st.total }, (_, i) => h('i', { class: i < st.level ? 'f' : i === st.level && !st.finished ? 'c' : '' })));
+
+/* ------------------------------------------------------------ hunt view */
+function viewHunt(app) {
+  const st = ST; document.title = 'The Greywater Light';
+  const main = h('div', {});
+  app.replaceChildren(h('div', { class: 'hunt' }, h('div', { class: 'tower' }, tower(st)), main));
+  main.append(strip(st));
+
+  if (!st.started_at) {
+    const err = h('p', { class: 'err', role: 'alert' });
+    main.append(
+      h('h2', {}, 'Old Marrow is missing'),
+      h('div', { class: 'story', style: 'margin-top:18px' },
+        h('p', {}, 'Marrow kept the Greywater Light for forty winters. He vanished in the autumn gale and left a chest sealed with one word. His logbook has nine pages, and each page opens the next.')),
+      h('ul', { class: 'rules' },
+        h('li', {}, 'Your clock starts when you press the button, not when you registered.'),
+        h('li', {}, 'Every answer is a single word or number. Capitals and spaces do not matter.'),
+        h('li', {}, 'Later puzzles use earlier answers. Keep notes (your journal also keeps them).'),
+        h('li', {}, 'Hints are optional. Each one adds ' + st.hint_penalty_min + ' minutes to your time.'),
+        h('li', {}, 'Rank is levels solved first, then time. Guesses are limited to one every couple of seconds.')),
+      st.hunt_open
+        ? h('button', { class: 'btn', onclick: async ev => { ev.target.disabled = true; try { setState((await api('begin')).state); renderChrome(); viewHunt(app); } catch (e) { err.textContent = e.message; ev.target.disabled = false; } } }, 'Start the hunt')
+        : h('p', { class: 'state-closed mono' }, 'The hunt has not opened yet. Check back when the organisers announce the start.'),
+      err);
+    return;
+  }
+
+  if (st.finished) {
+    main.append(
+      h('div', { class: 'stripe', 'aria-hidden': 'true' }),
+      h('h2', { style: 'margin-top:20px' }, 'The chest is open'),
+      h('div', { class: 'story', style: 'margin-top:18px' },
+        h('p', {}, 'You followed Marrow’s lamp all the way down. Final time: ' + fmt(st.time_ms) + (st.hints_used ? ' (including ' + st.hints_used + ' hint' + (st.hints_used > 1 ? 's' : '') + ').' : ', no hints.')),
+        st.rank ? h('p', {}, 'You are currently ranked #' + st.rank + ' of ' + st.players + ' on the board.') : null),
+      h('a', { class: 'btn', href: '#/board' }, 'See the leaderboard'));
+    main.append(journal(st));
+    return;
+  }
+
+  if (!st.hunt_open || !st.current) {
+    main.append(h('h2', {}, 'The hunt is paused'),
+      h('p', { class: 'story', style: 'margin-top:16px' }, 'The organisers have paused the hunt. Your progress and clock position are saved. Reload this page when they say play has resumed.'),
+      journal(st));
+    return;
+  }
+
+  const L = st.current;
+  document.title = 'Level ' + L.n + ' – The Greywater Light';
+  const msg = h('p', { class: 'err', role: 'alert' });
+  if (viewHunt.cleared) { main.append(h('p', { class: 'cleared' }, 'Level ' + viewHunt.cleared + ' cleared.')); viewHunt.cleared = 0; }
+  main.append(
+    h('div', { class: 'lvlhead' }, h('div', { class: 'n' }, 'Level ' + L.n + ' of ' + st.total), h('h2', {}, L.title)),
+    h('div', { class: 'story' }, L.story.map(p => h('p', {}, p))));
+  L.blocks.forEach(b => main.append(renderBlock(b)));
+
+  const inp = h('input', { id: 'ans', type: 'text', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Your answer', placeholder: 'Your answer', maxlength: 80 });
+  main.append(h('form', { class: 'answer', onsubmit: async ev => {
+      ev.preventDefault();
+      const btn = $('button', ev.target); btn.disabled = true; msg.textContent = ''; msg.classList.remove('ok');
+      try {
+        const r = await api('submit', { answer: inp.value });
+        if (r.state) setState(r.state);
+        if (r.ok) { viewHunt.cleared = L.n; renderChrome(); viewHunt(app); window.scrollTo(0, 0); }
+        else { msg.textContent = r.message; btn.disabled = false; inp.select(); if (r.state) { renderChrome(); viewHunt(app); } }
+      } catch (e) { msg.textContent = e.message; btn.disabled = false; }
+    } }, inp, h('button', { class: 'btn', type: 'submit' }, 'Submit answer')), msg);
+
+  const open = L.hints.length, left = L.hints_total - open;
+  const hintBox = h('div', { class: 'hints' }, h('h3', {}, 'Hints'),
+    open ? h('ol', {}, L.hints.map(t => h('li', {}, t))) : h('p', { class: 'muted', style: 'margin:8px 0 0' }, 'No hints opened on this level.'));
+  if (left > 0) hintBox.append(h('p', { style: 'margin:12px 0 0' },
+    h('button', { class: 'btn quiet small', onclick: async ev => {
+      if (!confirm('Open hint ' + (open + 1) + ' of ' + L.hints_total + '? It adds ' + st.hint_penalty_min + ' minutes to your time.')) return;
+      ev.target.disabled = true;
+      try { setState((await api('hint')).state); renderChrome(); viewHunt(app); } catch (e) { msg.textContent = e.message; ev.target.disabled = false; }
+    } }, 'Open hint ' + (open + 1) + ' of ' + L.hints_total), h('span', { class: 'cost' }, '+' + st.hint_penalty_min + ' min')));
+  main.append(hintBox, journal(st));
+}
+function journal(st) {
+  if (!st.journal.length) return h('span');
+  return h('details', { class: 'journal' }, h('summary', {}, 'Your journal'),
+    h('table', {}, st.journal.map(j => h('tr', {}, h('td', {}, 'Level ' + j.n), h('td', {}, j.title), h('td', {}, j.answer)))));
+}
+
+/* ------------------------------------------------------------ puzzle blocks */
+function renderBlock(b) {
+  if (b.kind === 'text') return h('pre', { class: 'cipher' }, b.text);
+  if (b.kind === 'lab') return imageLab(b);
+  if (b.kind === 'blink') return blink(b);
+  if (b.kind === 'console') {
+    b.lines.forEach(l => console.log('%c' + l, 'color:#c4352b;font:600 14px monospace'));
+    return h('span');
+  }
+  if (b.kind === 'ember') return h('span', { id: 'ember', hidden: true, [b.attr]: b.value });
+  return h('span');
+}
+
+function blink(b) {
+  const lamp = h('div', { class: 'lamp', role: 'img', 'aria-label': 'A lamp flashing a pattern' });
+  let timer, slow = false;
+  const stop = () => { clearTimeout(timer); lamp.classList.remove('on'); };
+  const play = () => {
+    stop(); let i = 0;
+    const step = () => {
+      lamp.classList.toggle('on', i % 2 === 0);
+      const d = b.units[i] * b.unitMs * (slow ? 1.8 : 1); i++;
+      if (i >= b.units.length) { timer = setTimeout(() => { lamp.classList.remove('on'); timer = setTimeout(play, 3000); }, d); return; }
+      timer = setTimeout(step, d);
+    };
+    step();
+  };
+  cleanups.push(stop); setTimeout(play, 600);
+  return h('div', { class: 'lampwrap' }, lamp, h('div', { class: 'ctl' },
+    h('button', { class: 'btn quiet small', onclick: play }, 'Replay'),
+    h('button', { class: 'btn quiet small', 'aria-pressed': 'false', onclick: ev => { slow = !slow; ev.target.setAttribute('aria-pressed', slow); ev.target.textContent = slow ? 'Normal speed' : 'Slow down'; play(); } }, 'Slow down')));
+}
+
+function imageLab(b) {
+  const tools = new Set(b.tools);
+  const canvas = h('canvas', { role: 'img', 'aria-label': 'Image to examine with the controls below' });
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const v = { black: 0, white: 255, gamma: 1, chan: 'rgb', bit: 'all', invert: false };
+  let src = null, raf = 0;
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = img.width; canvas.height = img.height;
+    ctx.drawImage(img, 0, 0); src = ctx.getImageData(0, 0, img.width, img.height); draw();
+  };
+  img.src = b.src;
+  function draw() {
+    if (!src) return;
+    const out = ctx.createImageData(src.width, src.height), s = src.data, o = out.data;
+    const lo = v.black, hi = Math.max(v.white, lo + 1), inv = 1 / v.gamma, ch = { r: 0, g: 1, b: 2 }[v.chan];
+    const lut = new Uint8ClampedArray(256);
+    for (let x = 0; x < 256; x++) { let t = Math.min(1, Math.max(0, (x - lo) / (hi - lo))); t = Math.pow(t, inv); lut[x] = (v.invert ? 1 - t : t) * 255; }
+    const bit = v.bit === 'all' ? -1 : +v.bit;
+    for (let i = 0; i < s.length; i += 4) {
+      for (let c = 0; c < 3; c++) {
+        let x = s[i + (ch === undefined ? c : ch)];
+        if (bit >= 0) x = ((x >> bit) & 1) * 255;
+        o[i + c] = lut[x];
+      }
+      o[i + 3] = 255;
+    }
+    ctx.putImageData(out, 0, 0);
+  }
+  const queue = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); };
+  const ctrls = h('div', { class: 'ctrls' });
+  const slider = (key, label, min, max, step) => {
+    const val = h('span', {}, String(v[key]));
+    const inp = h('input', { type: 'range', min, max, step, value: v[key], id: 'lab-' + key + Math.random().toString(36).slice(2, 6),
+      oninput: () => { v[key] = +inp.value; val.textContent = inp.value; queue(); } });
+    inp.reset = () => { v[key] = key === 'white' ? 255 : key === 'gamma' ? 1 : 0; inp.value = v[key]; val.textContent = v[key]; };
+    ctrls.append(h('div', {}, h('label', { for: inp.id }, label, val), inp)); return inp;
+  };
+  const sliders = [];
+  if (tools.has('levels')) { sliders.push(slider('black', 'Black point', 0, 255, 1), slider('white', 'White point', 0, 255, 1), slider('gamma', 'Midtones (gamma)', 0.2, 3, 0.05)); }
+  const sel = (key, label, opts) => {
+    const s = h('select', { id: 'lab-' + key, onchange: () => { v[key] = s.value; queue(); } }, opts.map(([val, t]) => h('option', { value: val }, t)));
+    s.reset = () => { s.value = opts[0][0]; v[key] = opts[0][0]; };
+    ctrls.append(h('div', {}, h('label', { for: s.id }, label), s)); sliders.push(s);
+  };
+  if (tools.has('channels')) sel('chan', 'Colour channel', [['rgb', 'Full colour'], ['r', 'Red only'], ['g', 'Green only'], ['b', 'Blue only']]);
+  if (tools.has('bits')) sel('bit', 'Bit layer', [['all', 'All layers'], ...[7, 6, 5, 4, 3, 2, 1, 0].map(n => [String(n), 'Layer ' + n + (n === 7 ? ' (strongest)' : n === 0 ? ' (thinnest)' : '')])]);
+  let invBox;
+  if (tools.has('invert')) {
+    invBox = h('input', { type: 'checkbox', id: 'lab-inv', onchange: () => { v.invert = invBox.checked; queue(); } });
+    ctrls.append(h('div', { class: 'row', style: 'align-self:end' }, invBox, h('label', { for: 'lab-inv', style: 'margin:0' }, 'Invert')));
+  }
+  ctrls.append(h('div', { class: 'tools' }, h('button', { type: 'button', class: 'btn small', onclick: () => {
+    sliders.forEach(s => s.reset()); v.invert = false; if (invBox) invBox.checked = false; draw();
+  } }, 'Reset')));
+  return h('div', { class: 'lab' }, canvas, ctrls);
+}
+
+/* ------------------------------------------------------------ leaderboard */
+async function viewBoard(app) {
+  document.title = 'Leaderboard – The Greywater Light';
+  const body = h('div', {});
+  app.replaceChildren(h('div', { class: 'board' }, h('h2', {}, 'Leaderboard'),
+    h('p', { class: 'sub' }, 'Ranked by levels solved, then by time to the last level solved. Every hint adds a time penalty. Updates every few seconds.'), body));
+  const draw = async () => {
+    let d; try { d = await api('leaderboard'); } catch (e) { body.replaceChildren(h('p', { class: 'err' }, e.message)); return; }
+    if (!d.rows.length) { body.replaceChildren(h('p', { class: 'empty' }, 'Nobody has started yet. The first keeper to press start will appear here.')); return; }
+    const me = ST && role === 'player' ? ST.user : null;
+    body.replaceChildren(h('div', { class: 'scroll' }, h('table', { class: 'lb' },
+      h('thead', {}, h('tr', {}, h('th', {}, 'Rank'), h('th', {}, 'Keeper'), h('th', {}, 'Progress'), h('th', {}, 'Time'), h('th', { class: 'hide-s' }, 'Hints'))),
+      h('tbody', {}, d.rows.map(r => h('tr', { class: r.username === me ? 'me' : '' },
+        h('td', { class: 'rk' }, r.rank),
+        h('td', { class: 'nm' }, r.username, r.finished ? h('span', { class: 'tag' }, 'DONE') : null),
+        h('td', {}, h('div', { class: 'seg', role: 'img', 'aria-label': r.solved + ' of ' + d.total + ' levels' },
+          Array.from({ length: d.total }, (_, i) => h('i', { class: i < r.solved ? 'f' : '' })))),
+        h('td', { class: 't' }, r.solved ? fmt(r.time_ms) : '–'),
+        h('td', { class: 't hide-s' }, r.hints)))))));
+  };
+  await draw();
+  const iv = setInterval(draw, 8000); cleanups.push(() => clearInterval(iv));
+}
+
+/* ------------------------------------------------------------ admin */
+async function viewAdmin(app) {
+  document.title = 'Control room – The Greywater Light';
+  const root = h('div', {}); app.replaceChildren(root);
+  let keyShown = false, keyData = null, annDraft = null;
+  const act = async (a, body, ask) => { if (ask && !confirm(ask)) return; try { await api(a, body); await load(); } catch (e) { alert(e.message); } };
+  async function load() {
+    let d; try { d = await api('admin_data'); } catch (e) { root.replaceChildren(h('p', { class: 'err' }, e.message)); return; }
+    if (annDraft === null) annDraft = d.settings.announcement;
+    const ann = h('input', { type: 'text', id: 'ann', maxlength: 300, value: annDraft, placeholder: 'Message shown to every player', oninput: e => annDraft = e.target.value });
+    const started = d.players.length;
+    root.replaceChildren(
+      h('h2', {}, 'Control room'),
+      h('div', { class: 'stats' },
+        h('div', {}, h('b', {}, d.registered), 'registered'), h('div', {}, h('b', {}, started), 'started'), h('div', {}, h('b', {}, d.finished), 'finished')),
+      h('section', { class: 'panel' }, h('h3', {}, 'Hunt status: ', h('span', { class: d.settings.hunt_open ? 'state-open' : 'state-closed' }, d.settings.hunt_open ? 'open' : 'closed')),
+        h('p', { class: 'muted', style: 'margin:6px 0 0;max-width:60ch' }, 'While closed, nobody can start, see puzzles or submit answers. Progress is kept.'),
+        h('div', { class: 'bar' },
+          h('button', { class: 'btn', onclick: () => act('admin_settings', { hunt_open: !d.settings.hunt_open }) }, d.settings.hunt_open ? 'Close the hunt' : 'Open the hunt'),
+          h('a', { class: 'btn quiet', href: '#/board' }, 'Open leaderboard'))),
+      h('section', { class: 'panel' }, h('h3', {}, 'Announcement'),
+        h('div', { class: 'bar' }, ann,
+          h('button', { class: 'btn small', onclick: () => { act('admin_settings', { announcement: annDraft }); } }, 'Publish'),
+          h('button', { class: 'btn quiet small', onclick: () => { annDraft = ''; act('admin_settings', { announcement: '' }); } }, 'Clear'))),
+      h('section', { class: 'panel' }, h('h3', {}, 'Players'),
+        d.players.length ? h('div', { class: 'scroll' }, h('table', { class: 'lb', style: 'margin-top:12px' },
+          h('thead', {}, h('tr', {}, ['Rank', 'Keeper', 'Solved', 'Time', 'Hints', 'Wrong guesses', 'Last guess', ''].map(t => h('th', {}, t)))),
+          h('tbody', {}, d.players.map(p => h('tr', {},
+            h('td', { class: 'rk' }, p.rank), h('td', { class: 'nm' }, p.username, p.finished ? h('span', { class: 'tag' }, 'DONE') : null),
+            h('td', { class: 'num' }, p.solved + ' / ' + d.total), h('td', { class: 'num' }, p.solved ? fmt(p.time_ms) : '–'),
+            h('td', { class: 'num' }, p.hints), h('td', { class: 'num' }, p.wrong), h('td', { class: 'num' }, ago(p.last_attempt_at)),
+            h('td', { class: 'num' },
+              h('button', { class: 'btn quiet small', onclick: () => act('admin_reset', { id: p.id }, 'Reset ' + p.username + ' to level 1? Their clock and hints are cleared.') }, 'Reset'), ' ',
+              h('button', { class: 'btn quiet small', onclick: () => act('admin_delete', { id: p.id }, 'Delete ' + p.username + ' permanently?') }, 'Delete')))))))
+          : h('p', { class: 'empty' }, 'No one has started yet.'),
+        d.waiting.length ? h('p', { class: 'muted mono', style: 'font-size:14px' }, 'Registered but not started: ' + d.waiting.map(w => w.username).join(', ')) : null),
+      h('section', { class: 'panel' }, h('h3', {}, 'Answer key'),
+        h('div', { class: 'bar' }, h('button', { class: 'btn quiet small', onclick: async () => { keyShown = !keyShown; if (keyShown && !keyData) keyData = (await api('admin_levels')).levels; load(); } }, keyShown ? 'Hide answers' : 'Show answers')),
+        keyShown && keyData ? h('table', { class: 'keytable' }, keyData.map(k => h('tr', {}, h('td', {}, k.n), h('td', {}, k.title), h('td', {}, k.answers.join(' / ')), h('td', {}, k.hints + ' hints')))) : null));
+  }
+  await load();
+  const iv = setInterval(() => { if (!document.activeElement || document.activeElement.id !== 'ann') load(); }, 10000);
+  cleanups.push(() => clearInterval(iv));
+}
+
+route();
+})();
+</script>
+</body>
+</html>
