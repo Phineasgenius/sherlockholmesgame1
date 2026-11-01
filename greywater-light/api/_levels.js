@@ -25,8 +25,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'lab', asset: 'lab1.png', tools: ['levels', 'invert'] }],
     hints: [
-      'The picture is not empty, only very dark. Your eyes cannot separate shades that close together, but a slider can.',
-      'Move the black point and white point sliders close together near the dark end. The hidden writing lives between roughly 30 and 50.'
+      'The picture is not empty, only very dark. Move the black point and white point sliders close together near the dark end (the hidden writing lives between roughly 30 and 50).'
     ],
     answers: ['lantern']
   },
@@ -38,8 +37,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'text', text: 'TAZTP NNJSO XLZAO YBNEK AZOAB EDOPN RTXYL ZUNMH LFVIF MVVGN HOXCF AOAYE QVNDU EXAYN EAZB' }],
     hints: [
-      'A repeating-key shift cipher: the Vigenère cipher.',
-      'The key is the answer to the previous level. Any online Vigenère decoder will do.'
+      'A repeating-key shift cipher: the Vigen\u00E8re cipher. The key is the answer to the previous level; any online decoder will do.'
     ],
     answers: ['shadow', 'ashadow']
   },
@@ -54,9 +52,7 @@ const LEVELS = [
       { kind: 'ember', attr: 'data-second-half', value: 'Y29u' }
     ],
     hints: [
-      'Your browser has built-in developer tools (F12, or right-click then Inspect). Look at both the Console and the Elements panel.',
-      'The Console gives you the first half. The second half is an attribute on a hidden element, and it is encoded.',
-      'The encoding is Base64. The text ends in "u" and decodes to three letters.'
+      'Open your browser\u2019s developer tools (F12, or right-click then Inspect). The Console holds the first half; the second half is a Base64-encoded attribute on a hidden element in the Elements panel.'
     ],
     answers: ['beacon']
   },
@@ -68,8 +64,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'blink', unitMs: 380, units: [3,1,1,1,3,1,1,3,3,1,3,1,3,3,3,1,3,3,1,1,3,1,3,1,1,3,1,1,3,3,1,1,1,1,1,3,1,1,1,1,1] }],
     hints: [
-      'Short flash, long flash: Morse code. A long flash is three times as long as a short one.',
-      'A long dark gap marks the end of a letter. The word has seven letters and helps a sailor find north.'
+      'Short and long flashes: Morse code (a long flash is three times as long as a short one). The word has seven letters and helps a sailor find north.'
     ],
     answers: ['compass']
   },
@@ -81,8 +76,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'text', text: '8   21   10   15   22   25' }],
     hints: [
-      'A=1, B=2, C=3 and so on. But these numbers are too high for a plain code.',
-      'Subtract the number of letters in the previous answer from each number, then turn the numbers back into letters.'
+      'A=1, B=2, C=3 and so on, but these numbers are too high. Subtract the number of letters in the previous answer from each, then turn the numbers back into letters.'
     ],
     answers: ['anchor']
   },
@@ -94,8 +88,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'lab', asset: 'lab2.png', tools: ['levels', 'channels', 'bits', 'invert'] }],
     hints: [
-      'Each colour channel of a pixel is stored as 8 bits. Use the layer control to look at one bit at a time.',
-      'Try the blue channel, bit 0 (the thinnest layer). A few stray dots are only noise.'
+      'Pull the picture apart with the viewer: try the blue channel at bit layer 0 (the thinnest layer). A few stray dots are only noise.'
     ],
     answers: ['harbor', 'harbour']
   },
@@ -107,8 +100,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'text', text: 'PBDX HBFW GZXL DLLP OROL HDSL' }],
     hints: [
-      'Letters are enciphered two at a time on a 5×5 grid where I and J share a cell. This is the Playfair cipher.',
-      'The keyword is the answer to the previous level. Decoders may add X or Z as padding; read through it.'
+      'This is the Playfair cipher (5\u00D75 grid, I and J share a cell). The keyword is the answer to the previous level; read through any X or Z padding.'
     ],
     answers: ['barnacle']
   },
@@ -120,8 +112,7 @@ const LEVELS = [
     ],
     blocks: [{ kind: 'text', text: '31.2139 N,  29.8853 E' }],
     hints: [
-      'Paste the coordinates into any map app.',
-      'A harbour fortress stands there today, built from the ruins of the tower. The city is named after a famous conqueror.'
+      'Paste the coordinates into any map app. A harbour fortress stands there today, in a city named after a famous conqueror.'
     ],
     answers: ['alexandria', 'alexandriaegypt']
   },
@@ -134,11 +125,13 @@ const LEVELS = [
     blocks: [{ kind: 'text', text:
       'Answer 1, letter 1\nAnswer 2, letter 5\nAnswer 3, letter 5\nAnswer 4, letter 4\nAnswer 5, letter 4\nAnswer 6, letter 5\nAnswer 7, letter 7\nAnswer 8, letter 3' }],
     hints: [
-      'Your journal lists every answer you have given. "Letter 1" means the first letter of that answer.',
-      'Eight letters, one from each answer. The result is a word, but not one connected to lighthouses.'
+      'Your journal lists every answer. Take the stated letter from each, in order. Eight letters make a word that has nothing to do with lighthouses.'
     ],
     answers: ['loophole']
   }
 ];
 
-module.exports = { LEVELS, HINT_PENALTY_MIN, GAME_TITLE: 'The Greywater Light' };
+// Shown (from the server) only to players who solve the last level.
+const FINAL_CODE = 'ebutuoytasuinegsaenihptaht';
+
+module.exports = { LEVELS, HINT_PENALTY_MIN, FINAL_CODE, GAME_TITLE: 'The Greywater Light' };

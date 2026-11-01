@@ -13,7 +13,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
-const { LEVELS, HINT_PENALTY_MIN, GAME_TITLE } = require('./_levels');
+const { LEVELS, HINT_PENALTY_MIN, FINAL_CODE, GAME_TITLE } = require('./_levels');
 
 const scrypt = promisify(crypto.scrypt);
 const TOTAL = LEVELS.length;
@@ -142,6 +142,7 @@ async function stateFor(p) {
     hints_used: p.hints_used, hint_penalty_min: HINT_PENALTY_MIN, server_now: Date.now(),
     hunt_open: !!s.hunt_open, announcement: s.announcement || '',
     time_ms: adjMs(p), rank: idx >= 0 ? idx + 1 : null, players: rows.length,
+    final_code: finished ? FINAL_CODE : null,
     current: live ? levelPayload(p.level, p.level_hints) : null,
     journal: LEVELS.slice(0, p.level).map((L, i) => ({ n: i + 1, title: L.title, answer: L.answers[0] }))
   };

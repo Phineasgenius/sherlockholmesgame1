@@ -96,6 +96,7 @@ details.journal{margin-top:34px;border-top:2px solid var(--line);padding-top:14p
 details.journal summary{cursor:pointer;font:800 22px var(--display)}
 .journal table{border-collapse:collapse;margin-top:10px;font:500 15px var(--mono)}
 .journal td{padding:3px 22px 3px 0}
+.finalcode{margin:24px 0 0;max-width:62ch}
 .rules{margin:18px 0 28px;padding:0;list-style:none;max-width:60ch}
 .rules li{padding:8px 0 8px 22px;border-top:1px solid var(--line);position:relative}
 .rules li::before{content:"";position:absolute;left:0;top:19px;width:10px;height:10px;background:var(--signal)}
@@ -399,7 +400,11 @@ function viewHunt(app) {
       h('div', { class: 'story', style: 'margin-top:18px' },
         h('p', {}, 'You followed Marrow’s lamp all the way down. Final time: ' + fmt(st.time_ms) + (st.hints_used ? ' (including ' + st.hints_used + ' hint' + (st.hints_used > 1 ? 's' : '') + ').' : ', no hints.')),
         st.rank ? h('p', {}, 'You are currently ranked #' + st.rank + ' of ' + st.players + ' on the board.') : null),
-      h('a', { class: 'btn', href: '#/board' }, 'See the leaderboard'));
+      st.final_code ? h('div', { class: 'finalcode' },
+        h('p', { style: 'margin:0 0 8px' }, 'This is the string you need to paste on the main site:'),
+        h('pre', { class: 'cipher', style: 'margin:0 0 10px;user-select:all' }, st.final_code),
+        h('button', { class: 'btn quiet small', onclick: ev => { try { navigator.clipboard.writeText(st.final_code); ev.target.textContent = 'Copied'; } catch { ev.target.textContent = 'Select the text and copy it'; } } }, 'Copy string')) : null,
+      h('a', { class: 'btn', href: '#/board', style: 'margin-top:22px' }, 'See the leaderboard'));
     main.append(journal(st));
     return;
   }
