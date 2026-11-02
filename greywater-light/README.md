@@ -95,7 +95,7 @@ Without the Supabase variables it uses a temporary in-memory store (cleared on r
 
 ## Security notes
 
-- Passwords are hashed with scrypt. Login tokens are HMAC-signed and expire (players 7 days, organiser 12 hours).
+- Players sign in with a name only (no password): whoever types an existing name continues that player's run. Login tokens are HMAC-signed and expire (players 14 days, organiser 12 hours).
 - Organiser credentials are compared on the server only. Failed logins are rate-limited.
 - Supabase tables have row-level security enabled with no policies, so the public key cannot read them.
 - Players can still use browser dev tools (one level expects it). They can never see answers, since checking happens on the server.

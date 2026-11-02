@@ -232,7 +232,7 @@ async function api(a, body) {
   } catch { throw new Error('Cannot reach the server. Check your connection.'); }
   let data = {}; try { data = await r.json(); } catch {}
   if (!r.ok) {
-    if (r.status === 401 && token && a !== 'login' && a !== 'admin_login') { signOut(true); }
+    if (r.status === 401 && token && a !== 'admin_login') { signOut(true); }
     throw new Error(data.error || 'Request failed (' + r.status + ')');
   }
   return data;
@@ -286,8 +286,8 @@ async function route(notice) {
     renderChrome(); return viewAdmin(app);
   }
   if (hash === '#/admin') { renderChrome(); return viewAuth(app, 'admin', notice); }
-  if (role !== 'player' || !token) { renderChrome(); return viewAuth(app, 'login', notice); }
-  try { if (!ST) setState((await api('me')).state); } catch (e) { renderChrome(); return viewAuth(app, 'login', e.message); }
+  if (role !== 'player' || !token) { renderChrome(); return viewAuth(app, 'player', notice); }
+  try { if (!ST) setState((await api('me')).state); } catch (e) { renderChrome(); return viewAuth(app, 'player', e.message); }
   renderChrome(); viewHunt(app);
 }
 window.addEventListener('hashchange', () => route());
@@ -297,35 +297,29 @@ function viewAuth(app, mode, notice) {
   document.title = 'The Greywater Light';
   const isAdmin = mode === 'admin';
   const err = h('p', { class: 'err', role: 'alert' }, notice || '');
-  const form = h('form', { novalidate: true, autocomplete: 'on' });
-  const draw = () => {
-    form.replaceChildren(...[
-      isAdmin ? h('h3', {}, 'Organiser sign in') : h('div', { class: 'tabs', role: 'tablist' },
-        h('button', { type: 'button', role: 'tab', 'aria-selected': mode === 'login', onclick: () => { mode = 'login'; draw(); } }, 'Sign in'),
-        h('button', { type: 'button', role: 'tab', 'aria-selected': mode === 'register', onclick: () => { mode = 'register'; draw(); } }, 'Create account')),
-      h('label', { for: 'u' }, 'Username'),
-      h('input', { id: 'u', type: 'text', name: 'username', autocomplete: 'username', autocapitalize: 'off', spellcheck: 'false', required: true }),
-      h('label', { for: 'p' }, 'Password'),
-      h('input', { id: 'p', type: 'password', name: 'password', autocomplete: mode === 'register' ? 'new-password' : 'current-password', required: true }),
-      mode === 'register' ? h('p', { class: 'muted mono', style: 'font-size:13px;margin:8px 0 0' }, '3–20 letters, numbers or underscores. Password: 6+ characters.') : null,
-      err,
-      h('button', { class: 'btn', type: 'submit' }, isAdmin ? 'Enter control room' : mode === 'register' ? 'Create account' : 'Sign in'),
-      h('p', { class: 'foot' },
-        isAdmin ? h('a', { href: '#/' }, 'Back to the hunt') : h('a', { href: '#/admin' }, 'Organiser sign in'))
-    ].filter(Boolean));
-  };
+  const form = h('form', { novalidate: true, autocomplete: 'on' },
+    isAdmin ? h('h3', {}, 'Organiser sign in') : h('h3', {}, 'Enter the hunt'),
+    h('label', { for: 'u' }, isAdmin ? 'Username' : 'Your name or nickname'),
+    h('input', { id: 'u', type: 'text', name: 'username', autocomplete: isAdmin ? 'username' : 'nickname', autocapitalize: 'off', spellcheck: 'false', maxlength: 24, required: true }),
+    isAdmin ? h('label', { for: 'p' }, 'Password') : null,
+    isAdmin ? h('input', { id: 'p', type: 'password', name: 'password', autocomplete: 'current-password', required: true }) : null,
+    isAdmin ? null : h('p', { class: 'muted mono', style: 'font-size:13px;margin:10px 0 0;line-height:1.5' },
+      'Your name is your key. Pick one nobody else will use, and type it exactly the same next time (on any device) to continue where you left off. It appears on the leaderboard.'),
+    err,
+    h('button', { class: 'btn', type: 'submit' }, isAdmin ? 'Enter control room' : 'Enter'),
+    h('p', { class: 'foot' }, isAdmin ? h('a', { href: '#/' }, 'Back to the hunt') : h('a', { href: '#/admin' }, 'Organiser sign in')));
   form.addEventListener('submit', async ev => {
     ev.preventDefault();
     const btn = $('button[type=submit]', form); btn.disabled = true; err.textContent = '';
     try {
-      const body = { username: $('#u').value, password: $('#p').value };
-      const res = await api(isAdmin ? 'admin_login' : mode, body);
+      const res = isAdmin
+        ? await api('admin_login', { username: $('#u').value, password: $('#p').value })
+        : await api('enter', { username: $('#u').value });
       setSession(res.token, isAdmin ? 'admin' : 'player', res.state);
       if (isAdmin) location.hash = '#/admin'; else if (location.hash && location.hash !== '#/') location.hash = '#/';
       route();
     } catch (e) { err.textContent = e.message; btn.disabled = false; }
   });
-  draw();
   app.replaceChildren(h('div', { class: 'auth' },
     h('div', {},
       h('div', { class: 'stripe', 'aria-hidden': 'true' }),
@@ -381,7 +375,7 @@ function viewHunt(app) {
       h('div', { class: 'story', style: 'margin-top:18px' },
         h('p', {}, 'Marrow kept the Greywater Light for forty winters. He vanished in the autumn gale and left a chest sealed with one word. His logbook has nine pages, and each page opens the next.')),
       h('ul', { class: 'rules' },
-        h('li', {}, 'Your clock starts when you press the button, not when you registered.'),
+        h('li', {}, 'Your clock starts when you press the button, not when you entered your name.'),
         h('li', {}, 'Every answer is a single word or number. Capitals and spaces do not matter.'),
         h('li', {}, 'Later puzzles use earlier answers. Keep notes (your journal also keeps them).'),
         h('li', {}, 'Hints are optional. Each one adds ' + st.hint_penalty_min + ' minutes to your time.'),

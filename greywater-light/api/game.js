@@ -12,10 +12,8 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { promisify } = require('util');
 const { LEVELS, HINT_PENALTY_MIN, FINAL_CODE, GAME_TITLE } = require('./_levels');
 
-const scrypt = promisify(crypto.scrypt);
 const TOTAL = LEVELS.length;
 const ADMIN_USER = process.env.ADMIN_USER || '';
 const ADMIN_PASS = process.env.ADMIN_PASS || '';
@@ -92,7 +90,6 @@ function verify(token) {
 }
 const sha = s => crypto.createHash('sha256').update(String(s)).digest();
 const safeEq = (a, b) => crypto.timingSafeEqual(sha(a), sha(b));
-async function hashPw(pw, salt) { return (await scrypt(pw, salt, 64)).toString('hex'); }
 
 const hits = new Map(); // tiny in-memory brute-force limiter (best effort on serverless)
 function limited(key, max) { const h = hits.get(key); return !!h && h.t > Date.now() && h.n >= max; }
@@ -172,30 +169,22 @@ const lbRow = ({ p, ms }, i) => ({
 
 /* ------------------------------------------------------------------ actions */
 const ACTIONS = {
-  async register({ req, body }) {
-    const name = String(body.username || '').trim(), pw = String(body.password || '');
-    if (!/^[A-Za-z0-9_]{3,20}$/.test(name)) fail(400, 'Username must be 3-20 letters, numbers or underscores.');
-    if (pw.length < 6 || pw.length > 100) fail(400, 'Password must be at least 6 characters.');
-    if (ADMIN_USER && name.toLowerCase() === ADMIN_USER.toLowerCase()) fail(409, 'That username is taken.');
-    if (limited('reg:' + ip(req), 20)) fail(429, 'Too many sign-ups from this network. Try later.');
-    if (await store.byName(name.toLowerCase())) fail(409, 'That username is taken.');
-    strike('reg:' + ip(req), 3600e3);
-    const salt = crypto.randomBytes(16).toString('hex');
-    let p;
-    try {
-      p = await store.insert({ username: name, username_lower: name.toLowerCase(), pass_salt: salt, pass_hash: await hashPw(pw, salt) });
-    } catch (e) { fail(409, 'That username is taken.'); }
-    return { token: sign({ r: 'p', id: p.id, exp: Date.now() + 7 * 864e5 }), state: await stateFor(p) };
-  },
-
-  async login({ req, body }) {
-    const name = String(body.username || '').trim().toLowerCase(), pw = String(body.password || '');
-    const key = 'login:' + ip(req);
-    if (limited(key, 10)) fail(429, 'Too many attempts. Wait a few minutes.');
-    const p = name && name.length < 40 && pw.length < 200 ? await store.byName(name) : null;
-    const ok = p && crypto.timingSafeEqual(Buffer.from(await hashPw(pw, p.pass_salt)), Buffer.from(p.pass_hash));
-    if (!ok) { strike(key, 600e3); fail(401, 'Wrong username or password.'); }
-    return { token: sign({ r: 'p', id: p.id, exp: Date.now() + 7 * 864e5 }), state: await stateFor(p) };
+  // Name-only entry: an existing name resumes that player's run, a new name creates one.
+  async enter({ req, body }) {
+    const name = String(body.username || '').trim().replace(/\s+/g, ' ');
+    if (!/^[A-Za-z0-9][A-Za-z0-9 _.\-]{1,23}$/.test(name))
+      fail(400, 'Use 2\u201324 characters: letters, numbers, spaces, dots, dashes or underscores.');
+    const lower = name.toLowerCase();
+    if (ADMIN_USER && lower === ADMIN_USER.toLowerCase()) fail(409, 'That name is reserved. Pick another.');
+    let p = await store.byName(lower), created = false;
+    if (!p) {
+      if (limited('new:' + ip(req), 300)) fail(429, 'Too many new players from this network. Try again later.');
+      try {
+        p = await store.insert({ username: name, username_lower: lower, pass_salt: '', pass_hash: '' });
+        created = true; strike('new:' + ip(req), 3600e3);
+      } catch (e) { p = await store.byName(lower); if (!p) throw e; } // lost a race with the same name
+    }
+    return { created, token: sign({ r: 'p', id: p.id, exp: Date.now() + 14 * 864e5 }), state: await stateFor(p) };
   },
 
   async admin_login({ req, body }) {
